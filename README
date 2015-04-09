@@ -1,6 +1,8 @@
 Facial Recognition
-par Sébastien BRUNAT
+par SÃ©bastien BRUNAT
 
-1) Niveaux de gris, égalisation et normalisation de l'image
-2) Image intégrale
-3) Calcul de caractéristiques Pseudo-Haar (Haar features)
+1) Niveaux de gris, Ã©galisation et normalisation de l'image
+2) Image intÃ©grale
+3) Calcul de caractÃ©ristiques Pseudo-Haar (Haar features)
+
+http://stackoverflow.com/questions/9777282/the-best-way-to-calculate-the-best-threshold-with-p-viola-m-jones-framework
