@@ -1,9 +1,11 @@
 Facial Recognition
 par Sébastien BRUNAT
 
-1) Niveaux de gris, égalisation et normalisation de l'image
+1) Niveaux de gris, égalisation de l'histogramme et normalisation de l'image
 2) Image intégrale
 3) Calcul de caractéristiques Pseudo-Haar (Haar features)
+4) Adaboost
+5) Cascade
 
 http://stackoverflow.com/questions/9777282/the-best-way-to-calculate-the-best-threshold-with-p-viola-m-jones-framework
 
