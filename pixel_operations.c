@@ -55,3 +55,10 @@ void putpixel(SDL_Surface *surface, unsigned x, unsigned y, Uint32 pixel) {
     break;
   }
 }
+
+Uint8 getintensity(int x, int y, SDL_Surface *img) {
+	Uint32 pixel = getpixel(img, x, y);
+	Uint8 r, g, b;
+	SDL_GetRGB(pixel, img->format, &r, &g, &b);
+	return r;
+}

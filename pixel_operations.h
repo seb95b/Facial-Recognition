@@ -8,5 +8,7 @@
  
 Uint32 getpixel(SDL_Surface *surface, unsigned x, unsigned y);
 void putpixel(SDL_Surface *surface, unsigned x, unsigned y, Uint32 pixel);
+
+Uint8 getintensity(int x, int y, SDL_Surface *img);
  
 # endif
