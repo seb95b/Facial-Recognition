@@ -2,7 +2,7 @@
 #define HAAR_FEATURES_H
 
 struct features {
-	size_t x, y, width;
+	size_t x, y, scale_x, scale_y;
 	short type;
 	int val;
 };
@@ -19,6 +19,6 @@ int count_features(int size);
 
 void compute_features(struct features *f, int **int_image, int frameSize, int scale);
 
-int compute_f(int x, int y, int type, int scale, int **int_image);
+struct features *compute_f(unsigned int **int_image);
 
 #endif
