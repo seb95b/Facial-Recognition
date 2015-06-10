@@ -43,51 +43,77 @@ void compute_int_image(unsigned int **int_image, SDL_Surface *img) {
 	}
 }
 static int get_int_image(int x, int y, unsigned int **int_image){
+	const int framesize = 3;
 	if(x < 0){
 		return 0;
 	}
 	if(y < 0){
 		return 0;
 	}
+	if(x >= framesize){
+		return 0;
+	}
+	if(y >= framesize){
+		return 0;
+	}
 	return int_image[x][y];
 }
 static int compute_features(int x, int y, int type, int scale_x, int scale_y , unsigned int **int_image){
-	const int A = int_image[x-1][y-1];
-	const int C = int_image[x-1][y + scale_y];
-	const int B = int_image[x + scale_x][y-1];
-	const int D = int_image[x + scale_x][y + scale_y];
-	int square11 = A + D - C - B;
-	int square21 = B + get_int_image(x + 2*scale_x, y + 2*scale_y, int_image) - D - get_int_image(x + 2*scale_x, y - 1, int_image);
-	int square12 = C + get_int_image(x + scale_x, y + 2*scale_y, int_image) - get_int_image(x-1, y + 2*scale_y, int_image) - D;
-	int square22 = D + get_int_image(x + 2*scale_x, y + 2*scale_y, int_image) - get_int_image(x + 2*scale_x, y + scale_y, int_image) - get_int_image(x + scale_x, y + 2*scale_y, int_image);
-	int square31=get_int_image(x+2*scale_x,y-1,int_image)+get_int_image(x+3*scale_x,y+scale_y,int_image)-get_int_image(x+2*scale_x,y+scale_y,int_image)-get_int_image(x+3*scale_x,y-1,int_image);
-	int square13=get_int_image(x-1,y+2*scale_y,int_image)+get_int_image(x+scale_x,y+3*scale_y,int_image)-get_int_image(x+scale_x,y+2*scale_y,int_image)-get_int_image(x-1,y+3*scale_y,int_image);
-	switch(type){
-		case 0:
-			return square11 - square21;
-		break;
- 		case 1:
-			return square12 - square11;
-                break;
-
-		case 2:
-			return square11 - square21 + square31; 
-                break;
-
-		case 3:
-			return square11 - square12 + square13;
-                break;
-
-		case 4:
-			return square21 - square11 + square12 - square22;
-                break;
+	if (type == 0){
+		int Aa = get_int_image(x- 1, y- 1, int_image);
+		int Ba = get_int_image(x + (scale_x/2)- 1, y- 1, int_image);
+		int Ca = get_int_image(x- 1, y + scale_y- 1, int_image);
+		int Da = get_int_image(x + (scale_x/2)- 1, y + (scale_y)- 1, int_image);
+		int asquare11 = Aa + Da - Ca - Ba;
+		int asquare21 = Ba + get_int_image(x + scale_x - 1, y + scale_y- 1, int_image) - Da - get_int_image(x + scale_x- 1, y- 1, int_image);
+		return asquare11 - asquare21;
+	}
+ 	if(type == 1){
+		int Ab = get_int_image(x- 1, y- 1, int_image);
+                int Bb = get_int_image(x + scale_x- 1, y- 1, int_image);
+                int Cb = get_int_image(x- 1, y + scale_y/2- 1, int_image);
+                int Db = get_int_image(x + scale_x- 1, y + (scale_y/2)- 1, int_image);
+		int bsquare11 = Ab + Db - Cb - Bb;
+		int bsquare12 = Cb + get_int_image(x + scale_x- 1, y + scale_y- 1, int_image) - get_int_image(x- 1, y + scale_y- 1, int_image) - Db;
+		return bsquare12 - bsquare11;
+   	}
+	if(type == 2){
+		int Ac = get_int_image(x- 1, y- 1, int_image);
+                int Bc = get_int_image(x + (scale_x/3)- 1, y- 1, int_image);
+      	        int Cc = get_int_image(x- 1, y + (scale_y)- 1, int_image);
+                int Dc = get_int_image(x + (scale_x/3)- 1, y + scale_y- 1, int_image);
+		int csquare11 = Ac + Dc - Cc - Bc;
+        	int csquare21 = Bc+ get_int_image(x + 2*(scale_x/3)- 1, y + scale_y- 1, int_image) - Dc - get_int_image(x + 2*(scale_x/3)- 1, y- 1, int_image);
+		int csquare31=get_int_image(x + 2*(scale_x/3)- 1,y- 1,int_image)-get_int_image(x+scale_x- 1,y+scale_y- 1,int_image)+get_int_image(x+2*(scale_x/3)- 1,y+scale_y- 1,int_image)-get_int_image(x+scale_x- 1,y- 1,int_image);
+		return csquare11 - csquare21 + csquare31;
+ 	}
+	if(type == 3){
+		int Ad = get_int_image(x- 1, y- 1, int_image);
+                int Bd = get_int_image(x + scale_x- 1, y- 1, int_image);
+                int Cd = get_int_image(x- 1, y + (scale_y/3)- 1, int_image);
+                int Dd = get_int_image(x + scale_x- 1, y + (scale_y/3)- 1, int_image);
+		int dsquare11 = Ad + Dd - Cd - Bd;
+		int dsquare12 = Cd + get_int_image(x + scale_x -1, y + 2*(scale_y/3) -1, int_image) - get_int_image(x-1, y + 2*(scale_y/3)-1, int_image) - Dd;
+		int dsquare13=get_int_image(x -1,y+2*(scale_y/3)-1,int_image)+get_int_image(x+scale_x-1,y+scale_y-1,int_image)-get_int_image(x+scale_x-1,y+2*(scale_y/3)-1,int_image)-get_int_image(x-1,y+scale_y-1,int_image);
+		return dsquare11 - dsquare12 + dsquare13;
+    	}
+	if(type == 4){
+		int Ae = get_int_image(x- 1, y- 1, int_image);
+       	        int Be = get_int_image(x + (scale_x/2)-1, y- 1, int_image);
+                int Ce = get_int_image(x- 1, y + (scale_y/2)-1, int_image);
+                int De = get_int_image(x + (scale_x/2)-1, y + (scale_y/2)-1, int_image);
+		int esquare11 = Ae + De - Ce - Be;
+		int esquare21 = Be + get_int_image(x + scale_x-1, y + scale_y-1, int_image) - De - get_int_image(x + scale_x-1, y -1, int_image);
+		int esquare12 = Ce + get_int_image(x + scale_x-1, y + scale_y-1, int_image) - get_int_image(x -1, y + scale_y-1, int_image) - De;
+		int esquare22 = De + get_int_image(x+scale_x-1,y+scale_y-1, int_image) - get_int_image(x + (scale_x/2)-1, y + scale_y-1, int_image) - get_int_image(x+scale_x-1,y+(scale_y/2)-1,int_image);
+		return esquare21 - esquare11 + esquare12 - esquare22;
 	}
 return 0;
 }
 
 struct features *compute_f(unsigned int **int_image){
 	const int feature[5][2] = {{2,1}, {1,2}, {3,1}, {1,3}, {2,2}};
-	const int frameSize = 19;
+	const int frameSize = 3;
 	struct features *tab_f = malloc(compute_size()*sizeof(struct features));
 	int f = 0;
 	for (int i = 0; i < 5; i++) {
