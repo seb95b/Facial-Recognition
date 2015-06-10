@@ -42,37 +42,51 @@ void compute_int_image(unsigned int **int_image, SDL_Surface *img) {
 		compute_int_image_rec(img->h-1, y, int_image, img);
 	}
 }
-
-static int compute_features(int x, int y, int type, int scale_x, int scale_y int **int_image){
+static int get_int_image(int x, int y, unsigned int **int_image){
+	if(x < 0){
+		return 0;
+	}
+	if(y < 0){
+		return 0;
+	}
+	return int_image[x][y];
+}
+static int compute_features(int x, int y, int type, int scale_x, int scale_y , unsigned int **int_image){
 	const int A = int_image[x-1][y-1];
-	const int C = int_image[x-1][x + scale_y];
-	const int B = int_image[x + scale_x][y -1];
+	const int C = int_image[x-1][y + scale_y];
+	const int B = int_image[x + scale_x][y-1];
 	const int D = int_image[x + scale_x][y + scale_y];
+	int square11 = A + D - C - B;
+	int square21 = B + get_int_image(x + 2*scale_x, y + 2*scale_y, int_image) - D - get_int_image(x + 2*scale_x, y - 1, int_image);
+	int square12 = C + get_int_image(x + scale_x, y + 2*scale_y, int_image) - get_int_image(x-1, y + 2*scale_y, int_image) - D;
+	int square22 = D + get_int_image(x + 2*scale_x, y + 2*scale_y, int_image) - get_int_image(x + 2*scale_x, y + scale_y, int_image) - get_int_image(x + scale_x, y + 2*scale_y, int_image);
+	int square31=get_int_image(x+2*scale_x,y-1,int_image)+get_int_image(x+3*scale_x,y+scale_y,int_image)-get_int_image(x+2*scale_x,y+scale_y,int_image)-get_int_image(x+3*scale_x,y-1,int_image);
+	int square13=get_int_image(x-1,y+2*scale_y,int_image)+get_int_image(x+scale_x,y+3*scale_y,int_image)-get_int_image(x+scale_x,y+2*scale_y,int_image)-get_int_image(x-1,y+3*scale_y,int_image);
 	switch(type){
-		case 0;
-			return (A + D - C - B) - (B + int_image[x + 2*scale_x][y + 2*scale_y] - D - int_image[x + 2*scale_x][y - 1]);
+		case 0:
+			return square11 - square21;
 		break;
-
-		case 1;
-			return (C + int_image[x + scale_x][y + 2*scale_y] - int_image[x-1][y + 2*scale_y] - D) - (A + D - C - B);
+ 		case 1:
+			return square12 - square11;
                 break;
 
-		case 2;
-			return (a + D - C - B) - (B + int_image[x + 2*scale_x][y + scale_y] - D - int_image[][] ) + ()
+		case 2:
+			return square11 - square21 + square31; 
                 break;
 
-		case 3;
-			
+		case 3:
+			return square11 - square12 + square13;
                 break;
 
-		case 4;
-			
+		case 4:
+			return square21 - square11 + square12 - square22;
                 break;
 	}
+return 0;
 }
 
-int compute_f(int **int_image){
-	const int feature[features][2] = {{2,1}, {1,2}, {3,1}, {1,3}, {2,2}};
+struct features *compute_f(unsigned int **int_image){
+	const int feature[5][2] = {{2,1}, {1,2}, {3,1}, {1,3}, {2,2}};
 	const int frameSize = 19;
 	struct features *tab_f = malloc(compute_size()*sizeof(struct features));
 	int f = 0;
@@ -83,22 +97,27 @@ int compute_f(int **int_image){
 			for (int y = 0; y <= frameSize-sizeY; y++) {
                         	for (int width = sizeX; width <= frameSize-x; width+=sizeX) {
                                         for (int height = sizeY; height <= frameSize-y; height+=sizeY) {
-                                                tab_f[f] = compute_features(x,y,i, width, height, int_image);
+                                                tab_f[f].val = compute_features(x,y,i, width, height, int_image);
+						tab_f[f].x = x;
+                                                tab_f[f].y = y;
+                                                tab_f[f].scale_x = width;
+                                                tab_f[f].scale_y = height;
+                                                tab_f[f].type = i;
 						f++;
                                         }
                                 }
 			}
                 }
         }
+	return tab_f;
 }
-static int compute_size(){
-	const int frameSize = 19;
-        const int features = 5;
+int compute_size(){
+	const int frameSize = 3;
 // All five feature types:
-        const int feature[features][2] = {{2,1}, {1,2}, {3,1}, {1,3}, {2,2}};
+        const int feature[5][2] = {{2,1}, {1,2}, {3,1}, {1,3}, {2,2}};
         int count = 0;
 // Each feature:
-        for (int i = 0; i < features; i++) {
+        for (int i = 0; i < 5; i++) {
                 int sizeX = feature[i][0];
                 int sizeY = feature[i][1];
     // Each position:

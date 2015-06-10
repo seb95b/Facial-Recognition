@@ -2,7 +2,7 @@
 #define HAAR_FEATURES_H
 
 struct features {
-	size_t x, y, width;
+	size_t x, y, scale_x, scale_y;
 	short type;
 	int val;
 };
@@ -17,8 +17,7 @@ int row_sum(int x, int y, SDL_Surface *img);
 
 int count_features(int size);
 
-void compute_features(struct features *f, int **int_image, int frameSize, int scale);
+struct features *compute_f(unsigned int **int_image);
 
-int compute_f(int x, int y, int type, int scale, int **int_image);
-
+int compute_size();
 #endif
