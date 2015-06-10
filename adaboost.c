@@ -1,12 +1,11 @@
 #include <stdlib.h>
-#include <dirent.h>
-#include <pixel_operations.h>
-#include <math.h>
+#include <stdio.h>
 #include "adaboost.h"
-#include "haar_features.h"
 #include "quicksort.h"
 
-int nb_features = 63960;
+const int nb_features = 63960;
+int nb_neg;
+int nb_pos;
 
 struct image *prepare_tab_image(size_t nb) {
 	
@@ -28,14 +27,14 @@ struct image *prepare_tab_image(size_t nb) {
         exit(1);
 	}
 	
-    while(file = readdir(rep)) {
-		SDL_Surface *img = load_image(file);
+    while((file = readdir(rep)) != NULL) {
+		SDL_Surface *img = load_image(file->d_name);
 		img = Greyscale(img);
 		img = eq_hist(img);
 		
 		compute_int_image(int_image, img);
 		
-		struct features *feat = compute_features(int_image);
+		struct features *feat = compute_f(int_image);
 		
 		struct image pict;
 		pict.face = 1;
@@ -44,6 +43,7 @@ struct image *prepare_tab_image(size_t nb) {
 		tab_image[i] = pict;
 		
 		++i;
+		nb_pos++;
 	}
 
     if (closedir(rep) == -1)
@@ -58,14 +58,14 @@ struct image *prepare_tab_image(size_t nb) {
         exit(1);
 	}
 	
-	while(file = readdir(rep)) {
-		SDL_Surface *img = load_image(file);
+	while((file = readdir(rep)) != NULL) {
+		SDL_Surface *img = load_image(file->d_name);
 		img = Greyscale(img);
 		img = eq_hist(img);
 		
 		compute_int_image(int_image, img);
 		
-		struct features *feat = compute_features(int_image);
+		struct features *feat = compute_f(int_image);
 		
 		struct image pict;
 		pict.face = 0;
@@ -73,6 +73,7 @@ struct image *prepare_tab_image(size_t nb) {
 		
 		tab_image[i] = pict;
 		
+		nb_neg++;
 		++i;
 	}
 	
@@ -91,40 +92,40 @@ int compute_weakclass(int threshold, int polarity, int features) {
 	if(polarity)
 		return (features < threshold)?1:0;
 	else
-		return (feature > threshold)?1:0;
+		return (features > threshold)?1:0;
 }
 
-static int sp(struct ada_features feat) {
+static int sp(struct ada_features *feat_t, int threshold) {
 	int sp;
-	for(sp = 0; sp < threshold; if(feat_t[sp].face) sp++);
+	for(sp = 0; sp < threshold; ) if(feat_t[sp].face) sp++;
 	return sp;
 }
 
-static int sm(struct ada_features feat, int threshold) {
+static int sm(struct ada_features *feat_t, int threshold) {
 	int sm;
-	for(sm = 0; sp < threshold; if(!feat_t[sm].face) sm++);
+	for(sm = 0; sm < threshold;) if(!feat_t[sm].face) sm++;
 	return sm;
 }
 
-int compute_threshold(struct ada_features *feat_t, const int nb_neg, const int nb_pos) {
+int compute_threshold(struct ada_features *feat_t) {
 	quickSort(feat_t, 0, nb_features);
 	
 	int threshold;
-	int *error = malloc((nb_neg+neg_pos)*sizeof(int));
+	int *error = malloc((nb_neg+nb_pos)*sizeof(int));
 	
-	for(int i = 0; i < nb_neg+neg_pos; ++i) {
+	for(int i = 0; i < nb_neg+nb_pos; ++i) {
 		
 		threshold = feat_t[i].feat->val;
 		
 		int error1 = sp(feat_t, threshold)+(nb_neg - sm(feat_t, threshold));
 		int error2 = sm(feat_t, threshold)+(nb_pos - sp(feat_t, threshold));
 		
-		int error[i] = (error1 < error2)?error1:error2;
+		error[i] = (error1 < error2)?error1:error2;
 	}
 	
 	int index = 0;
 	int min_error = error[0];
-	for(int i = 1; i < nb_neg+neg_pos; i++) {
+	for(int i = 1; i < nb_neg+nb_pos; i++) {
 		if(error[i] < min_error) {
 			min_error = error[i];
 			index = i;
@@ -135,16 +136,14 @@ int compute_threshold(struct ada_features *feat_t, const int nb_neg, const int n
 }
 
 struct strongclass *adaboost(struct image *image_tab, unsigned int iter, unsigned int strong) {
-	const int nb_neg;
-	const int nb_pos;
 	
 	float *weight = malloc((nb_pos+nb_neg)*sizeof(float));
 	
-	struct strongclass *strongclassfier = malloc(sizeof(struct strongclass));
+	struct strongclass *strongclassifier = malloc(sizeof(struct strongclass));
 	strongclassifier->wc = malloc(strong*sizeof(struct weakclass));
 	strongclassifier->alpha = malloc(strong*sizeof(float));
 	
-	struct weakclass *temp_weak = malloc(nb_feature*sizeof(struct weakclass));
+	struct weakclass *temp_weak = malloc(nb_features*sizeof(struct weakclass));
 	
 	struct ada_features *feat_t = malloc((nb_pos+nb_neg)*sizeof(struct ada_features*));
 	
@@ -161,15 +160,15 @@ struct strongclass *adaboost(struct image *image_tab, unsigned int iter, unsigne
 	for(unsigned int t = 0; t < iter; ++t) { //main ada loop
 		
 		float sum = 0;//normalize weights
-		for(unsigned int j = 0; j < nb_pos + nb_neg; ++j) {
+		for(int j = 0; j < nb_pos + nb_neg; ++j) {
 			sum += weight[j];
 		}
-		for(unsigned int j = 0; j < nb_pos + nb_neg; ++j) {
-			weight = weight[j]/sum;
+		for(int j = 0; j < nb_pos + nb_neg; ++j) {
+			weight[j] = weight[j]/sum;
 		}
 		
 		for(i = 0; i < nb_features; ++i) {
-			for(unsigned int j = 0; j < nb_pos + nb_neg); ++j) {
+			for(int j = 0; j < nb_pos + nb_neg; ++j) {
 				struct ada_features a_feat;
 				a_feat.face = image_tab[j].face;
 				a_feat.feat = (image_tab[j].feat)+i;
@@ -178,11 +177,10 @@ struct strongclass *adaboost(struct image *image_tab, unsigned int iter, unsigne
 			
 			int threshold = compute_threshold(feat_t);
 			
-			for(int sp = 0; sp < threshold; if(feat_t[sp].face) sp++);
+			int spl = sp(feat_t, threshold);
+			int smi = sm(feat_t, threshold);
 			
-			for(int sm = 0; sm < threshold, if(!feat_t[sm].face) sm++);
-			
-			int polarity = (sp > sm)?1:0;
+			int polarity = (spl > smi)?1:0;
 			
 			temp_weak[i].f.x = image_tab[0].feat[i].x;
 			temp_weak[i].f.y = image_tab[0].feat[i].y;
@@ -193,7 +191,7 @@ struct strongclass *adaboost(struct image *image_tab, unsigned int iter, unsigne
 			temp_weak[i].p = polarity;
 			
 			error[i] = 0;
-			for(unsigned int j = 0; j < nb_pos + nb_neg); ++j) { 
+			for(int j = 0; j < nb_pos + nb_neg; ++j) { 
 				error[i] += weight[j]*fabs((double) (compute_weakclass(threshold, polarity, image_tab[j].feat[i].val) - image_tab[j].face));
 			}
 		}
@@ -207,17 +205,17 @@ struct strongclass *adaboost(struct image *image_tab, unsigned int iter, unsigne
 			}
 		}
 		
-		struct weakclass *weakclassfier = malloc(sizeof(struct weakclass));
-		weakclassifier->f = temp_weak[index].f;
-		weakclassifier->t = temp_weak[index].t;
-		weakclassifier->p = temp_weak[index].p;
+		struct weakclass weakclassifier;
+		weakclassifier.f = temp_weak[index].f;
+		weakclassifier.t = temp_weak[index].t;
+		weakclassifier.p = temp_weak[index].p;
 		
-		strongclassifier->wc[t] = weakclassfier;
+		strongclassifier->wc[t] = weakclassifier;
 		
 		float beta = min_error/(1 - min_error);
 			
-		for(unsigned int j = 0; j < nb_pos + nb_neg; ++j) {
-			weight[j] = weight[j]*pow(beta, 1-((compute_weakclass(threshold, polarity, image_tab[j].feat[index].val) == image_tab[j].face)?0:1));
+		for(int j = 0; j < nb_pos + nb_neg; ++j) {
+			weight[j] = weight[j]*pow(beta, 1-((compute_weakclass(weakclassifier.t, weakclassifier.p, image_tab[j].feat[index].val) == image_tab[j].face)?0:1));
 		}
 		
 		strongclassifier->alpha[t] = log10(1/beta);

@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include "quicksort.h"
-#include "adaboost.h"
 
 int part(struct ada_features *tableau, int p, int r) {
     int pivot = tableau[p].feat->val, i = p-1, j = r+1;
