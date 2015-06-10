@@ -43,6 +43,53 @@ void compute_int_image(unsigned int **int_image, SDL_Surface *img) {
 	}
 }
 
-int compute_f(int x, int y, int type, int scale, int **int_image) {
-	//FIX ME
+int compute_f(int x, int y, int type, int scale_x, int scale_y int **int_image){
+	return int_image[x-1][y-1] + int_image[x + scale_x][y + scale_y] - int_image[x-1][x + scale_y] - int_image[x + scale_x][y -1];
+}
+
+int compute_features(int **int_image){
+	const int feature[features][2] = {{2,1}, {1,2}, {3,1}, {1,3}, {2,2}};
+	const int frameSize = 19;
+	struct features **tab_f = malloc(compute_size()*sizeof(struct features));
+	int x_f = 0;
+	int y_f = 0;
+	for (int i = 0; i < 5; i++) {
+		int sizeX = feature[i][0];
+		int sizeY = feature[i][1];
+        	for (int x = 0; x <= frameSize-sizeX; x++) {
+			for (int y = 0; y <= frameSize-sizeY; y++) {
+                        	for (int width = sizeX; width <= frameSize-x; width+=sizeX) {
+                                        for (int height = sizeY; height <= frameSize-y; height+=sizeY) {
+                                                tab_f[x_f][y_f] = compute_f(x,y,i, width, height, int_image);
+                                        }
+                                }
+			y_f++;
+                        }
+		x_f++;
+                }
+        }
+}
+int compute_size(){
+	const int frameSize = 19;
+        const int features = 5;
+// All five feature types:
+        const int feature[features][2] = {{2,1}, {1,2}, {3,1}, {1,3}, {2,2}};
+        int count = 0;
+// Each feature:
+        for (int i = 0; i < features; i++) {
+                int sizeX = feature[i][0];
+                int sizeY = feature[i][1];
+    // Each position:
+                for (int x = 0; x <= frameSize-sizeX; x++) {
+                        for (int y = 0; y <= frameSize-sizeY; y++) {
+            // Each size fitting within the frameSize:
+                                for (int width = sizeX; width <= frameSize-x; width+=sizeX) {
+                                        for (int height = sizeY; height <= frameSize-y; height+=sizeY) {
+                                                count++;
+                                        }
+                                }
+                        }
+                }
+        }
+	return count;
 }
