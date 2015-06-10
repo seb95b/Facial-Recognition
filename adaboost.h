@@ -28,7 +28,7 @@ struct strongclass {
 	float *alpha;
 };
 
-struct strongclass *adaboost(struct image *tab, unsigned int iter, unsigned int strong);
+struct strongclass *adaboost(struct image *tab, unsigned int iter);
 
 int compute_weakclass(int threshold, int polarity, int features);
 

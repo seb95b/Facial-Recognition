@@ -19,7 +19,7 @@ struct image *prepare_tab_image(size_t nb) {
 	int i = 0;
 
 	DIR* rep = NULL;
-    struct dirent* file = NULL; /* Déclaration d'un pointeur vers la structure dirent. */
+    struct dirent* file = NULL;
     rep = opendir("./pos");
 	
 	if (rep == NULL) {
@@ -34,7 +34,8 @@ struct image *prepare_tab_image(size_t nb) {
 		
 		compute_int_image(int_image, img);
 		
-		struct features *feat = compute_f(int_image);
+		struct features *feat = malloc(sizeof(struct features));
+		feat = compute_f(int_image);
 		
 		struct image pict;
 		pict.face = 1;
@@ -135,13 +136,13 @@ int compute_threshold(struct ada_features *feat_t) {
 	return feat_t[index].feat->val;
 }
 
-struct strongclass *adaboost(struct image *image_tab, unsigned int iter, unsigned int strong) {
+struct strongclass *adaboost(struct image *image_tab, unsigned int iter) {
 	
 	float *weight = malloc((nb_pos+nb_neg)*sizeof(float));
 	
 	struct strongclass *strongclassifier = malloc(sizeof(struct strongclass));
-	strongclassifier->wc = malloc(strong*sizeof(struct weakclass));
-	strongclassifier->alpha = malloc(strong*sizeof(float));
+	strongclassifier->wc = malloc(iter*sizeof(struct weakclass));
+	strongclassifier->alpha = malloc(iter*sizeof(float));
 	
 	struct weakclass *temp_weak = malloc(nb_features*sizeof(struct weakclass));
 	
