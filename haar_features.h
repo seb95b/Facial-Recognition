@@ -2,10 +2,9 @@
 #define HAAR_FEATURES_H
 
 struct features {
-	int x;
-	int y;
+	size_t x, y, width;
+	short type;
 	int val;
-	struct features *next;
 };
 
 static inline int fvalue(struct features *f) { return f->val; }
