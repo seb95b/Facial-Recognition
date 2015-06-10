@@ -12,14 +12,14 @@ struct ada_features {
 }
 
 struct weakclass {
-	struct features f; //features
+	struct features f;
 	int t; //threshold
 	int p; // polarity
 };
 
 struct strongclass {
-	struct weakclass *tab;
-	int *alpha;
+	struct weakclass *wc;
+	float *alpha;
 }
 
 struct strongclass *adaboost(struct image *tab);
@@ -27,5 +27,11 @@ struct strongclass *adaboost(struct image *tab);
 int compute_weakclass(int threshold, int polarity, int features);
 
 struct image *prepare_tab_image(size_t nb);
+
+int compute_threshold(struct ada_features *feat_t);
+
+static int sp(struct ada_features feat);
+
+static int sm(struct ada_features feat);
 
 #endif
