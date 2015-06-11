@@ -30,14 +30,6 @@ struct strongclass {
 
 struct strongclass *adaboost(struct image *tab, unsigned int iter);
 
-int compute_weakclass(int threshold, int polarity, int features);
-
-struct image *prepare_tab_image(size_t nb);
-
-int compute_threshold(struct ada_features *feat_t);
-
-static int sp(struct ada_features *feat, int threshold);
-
-static int sm(struct ada_features *feat, int threshold);
+struct image *prepare_tab_image(int size, int nb);
 
 #endif

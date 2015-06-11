@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <time.h>
-#include "sdl_stuff.h"
-#include "image_transf.h"
-#include "haar_features.h"
+#include "adaboost.h"
 
 int main() {
+
+	time_t t1 = time(NULL);
 	//SDL_Surface *img = load_image("imagebis.jpg");
 	SDL_Surface *img = load_image("image.jpg");
 	//display_image(img);
@@ -25,7 +25,7 @@ int main() {
 	for(int i = 0; i < img->h; i++) {
 		int_image[i] = calloc(img->w, sizeof(int));
 	}
-	time_t t1 = time(NULL);
+	
 	
 	compute_int_image(int_image, img);
 	//Test
@@ -37,15 +37,27 @@ int main() {
 			printf(" %d ", int_image[i][j]);
 		}
 		
-		printf("\n");
+		printf("\n\n");
 	} 
+	
 	for(int i = 0; i < size; i++){
-		printf(" %d ", tab[i].val);
-		printf(" %zu ", tab[i].x);
-		printf(" %zu ", tab[i].y);
-		printf(" %zu ", tab[i].scale_x);
-		printf(" %zu ", tab[i].scale_y);
-		printf(" %d \n", tab[i].type);
+		printf("val: %d |", tab[i].val);
+		printf(" x: %zu ", tab[i].x);
+		printf("y: %zu ", tab[i].y);
+		printf("scale_x: %zu ", tab[i].scale_x);
+		printf("scale_y: %zu ", tab[i].scale_y);
+		printf("type: %d \n", tab[i].type);
 	}
+	
+	
+	
+	/*struct image *i = prepare_tab_image(19, 2);
+	struct strongclass *strong = adaboost(i, 2);
+	
+	for(int j = 0; j < 2; ++j) {
+		printf("%d\n", strong->wc[j].f.type);
+	}
+	*/
+	
 	printf("Exec in %d s\n", (int) (time(NULL) - t1));
 }
