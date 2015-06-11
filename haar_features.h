@@ -12,9 +12,9 @@ int compute_int_image_rec(int x, int y, unsigned int **int_image, SDL_Surface *i
 
 void compute_int_image(unsigned int **int_image, SDL_Surface *img);
 
-static int get_int_image(int x, int y, unsigned int **int_image);
+int get_int_image(int x, int y, unsigned int **int_image);
 
-static int compute_features(int x, int y, int type, int scale_x, int scale_y , unsigned int **int_image);
+int compute_features(int x, int y, int type, int scale_x, int scale_y , unsigned int **int_image);
 
 struct features *compute_f(unsigned int **int_image);
 

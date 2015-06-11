@@ -29,7 +29,7 @@ int main() {
 	
 	compute_int_image(int_image, img);
 	//Test
-	int size = compute_size();
+	int size = compute_size(3);
 	struct features *tab;
 	tab = compute_f(int_image);
 	for(int i = 0; i < img->h; i++) {

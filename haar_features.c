@@ -42,7 +42,7 @@ void compute_int_image(unsigned int **int_image, SDL_Surface *img) {
 		compute_int_image_rec(img->h-1, y, int_image, img);
 	}
 }
-static int get_int_image(int x, int y, unsigned int **int_image){
+int get_int_image(int x, int y, unsigned int **int_image){
 	const int framesize = 3;
 	if(x < 0){
 		return 0;
@@ -58,7 +58,7 @@ static int get_int_image(int x, int y, unsigned int **int_image){
 	}
 	return int_image[x][y];
 }
-static int compute_features(int x, int y, int type, int scale_x, int scale_y , unsigned int **int_image){
+int compute_features(int x, int y, int type, int scale_x, int scale_y , unsigned int **int_image){
 	if (type == 0){
 		int Aa = get_int_image(x- 1, y- 1, int_image);
 		int Ba = get_int_image(x + (scale_x/2)- 1, y- 1, int_image);
@@ -84,7 +84,7 @@ static int compute_features(int x, int y, int type, int scale_x, int scale_y , u
                 int Dc = get_int_image(x + (scale_x/3)- 1, y + scale_y- 1, int_image);
 		int csquare11 = Ac + Dc - Cc - Bc;
         	int csquare21 = Bc+ get_int_image(x + 2*(scale_x/3)- 1, y + scale_y- 1, int_image) - Dc - get_int_image(x + 2*(scale_x/3)- 1, y- 1, int_image);
-		int csquare31=get_int_image(x + 2*(scale_x/3)- 1,y- 1,int_image)-get_int_image(x+scale_x- 1,y+scale_y- 1,int_image)+get_int_image(x+2*(scale_x/3)- 1,y+scale_y- 1,int_image)-get_int_image(x+scale_x- 1,y- 1,int_image);
+		int csquare31=get_int_image(x + 2*(scale_x/3)- 1,y- 1,int_image)+get_int_image(x+scale_x- 1,y+scale_y- 1,int_image)-get_int_image(x+2*(scale_x/3)- 1,y+scale_y- 1,int_image)-get_int_image(x+scale_x- 1,y- 1,int_image);
 		return csquare11 - csquare21 + csquare31;
  	}
 	if(type == 3){
@@ -103,8 +103,8 @@ static int compute_features(int x, int y, int type, int scale_x, int scale_y , u
                 int Ce = get_int_image(x- 1, y + (scale_y/2)-1, int_image);
                 int De = get_int_image(x + (scale_x/2)-1, y + (scale_y/2)-1, int_image);
 		int esquare11 = Ae + De - Ce - Be;
-		int esquare21 = Be + get_int_image(x + scale_x-1, y + scale_y-1, int_image) - De - get_int_image(x + scale_x-1, y -1, int_image);
-		int esquare12 = Ce + get_int_image(x + scale_x-1, y + scale_y-1, int_image) - get_int_image(x -1, y + scale_y-1, int_image) - De;
+		int esquare21 = get_int_image(x-1+scale_x/2,y-1,int_image)+get_int_image(x+scale_x-1,y+scale_y/2-1,int_image)-get_int_image(x+scale_x/2-1,y+scale_y/2-1,int_image)-get_int_image(x+scale_x-1,y-1,int_image);
+		int esquare12 = get_int_image(x-1,y+scale_y/2-1,int_image)+get_int_image(x+scale_x/2-1,y+scale_y-1,int_image)-get_int_image(x+scale_x/2-1,y+scale_y/2-1,int_image)-get_int_image(x-1,y+scale_y-1,int_image);
 		int esquare22 = De + get_int_image(x+scale_x-1,y+scale_y-1, int_image) - get_int_image(x + (scale_x/2)-1, y + scale_y-1, int_image) - get_int_image(x+scale_x-1,y+(scale_y/2)-1,int_image);
 		return esquare21 - esquare11 + esquare12 - esquare22;
 	}
@@ -114,7 +114,7 @@ return 0;
 struct features *compute_f(unsigned int **int_image){
 	const int feature[5][2] = {{2,1}, {1,2}, {3,1}, {1,3}, {2,2}};
 	const int frameSize = 3;
-	struct features *tab_f = malloc(compute_size()*sizeof(struct features));
+	struct features *tab_f = malloc(compute_size(frameSize)*sizeof(struct features));
 	int f = 0;
 	for (int i = 0; i < 5; i++) {
 		int sizeX = feature[i][0];
@@ -137,8 +137,7 @@ struct features *compute_f(unsigned int **int_image){
         }
 	return tab_f;
 }
-int compute_size(){
-	const int frameSize = 3;
+int compute_size(int frameSize){
 // All five feature types:
         const int feature[5][2] = {{2,1}, {1,2}, {3,1}, {1,3}, {2,2}};
         int count = 0;
