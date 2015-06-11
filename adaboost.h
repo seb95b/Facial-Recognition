@@ -26,6 +26,7 @@ struct weakclass {
 struct strongclass {
 	struct weakclass *wc;
 	float *alpha;
+	int nb;
 };
 
 struct strongclass *adaboost(struct image *tab, unsigned int iter);

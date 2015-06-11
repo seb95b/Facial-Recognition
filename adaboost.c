@@ -241,6 +241,8 @@ struct strongclass *adaboost(struct image *image_tab, unsigned int iter) {
 		
 			strongclassifier->alpha[t] = log10(1/beta);
 		}
+		
+		strongclassifier->nb = iter;
 	
 		free(feat_t);
 		free(weight);
