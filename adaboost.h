@@ -6,15 +6,11 @@
 #include "sdl_stuff.h"
 #include "image_transf.h"
 #include "haar_features.h"
+#include "quicksort.h"
 
 struct image {
 	int face;
 	struct features *feat; //63960
-};
-
-struct ada_features {
-	struct features *feat;
-	int face;
 };
 
 struct weakclass {

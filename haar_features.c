@@ -111,10 +111,9 @@ int compute_features(int x, int y, int type, int scale_x, int scale_y , unsigned
 return 0;
 }
 
-struct features *compute_f(unsigned int **int_image){
+struct features *compute_f(const int frameSize, unsigned int **int_image){
 	const int feature[5][2] = {{2,1}, {1,2}, {3,1}, {1,3}, {2,2}};
-	const int frameSize = 3;
-	struct features *tab_f = malloc(compute_size(frameSize)*sizeof(struct features));
+	struct features *tab_f = calloc(compute_size(frameSize), sizeof(struct features));
 	int f = 0;
 	for (int i = 0; i < 5; i++) {
 		int sizeX = feature[i][0];
@@ -124,12 +123,12 @@ struct features *compute_f(unsigned int **int_image){
                         	for (int width = sizeX; width <= frameSize-x; width+=sizeX) {
                                         for (int height = sizeY; height <= frameSize-y; height+=sizeY) {
                                                 tab_f[f].val = compute_features(x,y,i, width, height, int_image);
-						tab_f[f].x = x;
+												tab_f[f].x = x;
                                                 tab_f[f].y = y;
                                                 tab_f[f].scale_x = width;
                                                 tab_f[f].scale_y = height;
                                                 tab_f[f].type = i;
-						f++;
+												f++;
                                         }
                                 }
 			}

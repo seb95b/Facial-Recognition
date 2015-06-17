@@ -2,14 +2,13 @@
 #include <stdio.h>
 #include <string.h>
 #include "adaboost.h"
-#include "quicksort.h"
 
 static int compute_threshold(struct ada_features *feat_t);
 static int sp(struct ada_features *feat, int threshold);
 static int sm(struct ada_features *feat, int threshold);
 static int compute_weakclass(int threshold, int polarity, int features);
 
-const int nb_features = 63960;
+int nb_features = 63960;
 int nb_neg;
 int nb_pos;
 
@@ -39,20 +38,17 @@ struct image *prepare_tab_image(int size, int nb) {
 			char *name = strcat(src, file->d_name);
 			SDL_Surface *img = load_image(name);
 			//display_image(img);
-			printf("ok");
+			//printf("ok");
 			img = Greyscale(img);
 			img = eq_hist(img);
 		
 			compute_int_image(int_image, img);
 		
 			struct features *feat = malloc(sizeof(struct features));
-			feat = compute_f(int_image);
+			feat = compute_f(19, int_image);
 		
-			struct image pict;
-			pict.face = 1;
-			pict.feat = feat;
-		
-			tab_image[i] = pict;
+			tab_image[i].face = 1;
+			tab_image[i].feat = feat;
 		
 			++i;
 			nb_pos++;
@@ -78,19 +74,16 @@ struct image *prepare_tab_image(int size, int nb) {
 			char *name = strcat(src, file->d_name);
 			SDL_Surface *img = load_image(name);
 			//display_image(img);
-			printf("ok");
+			//printf("ok");
 			img = Greyscale(img);
 			img = eq_hist(img);
 		
 			compute_int_image(int_image, img);
 		
-			struct features *feat = compute_f(int_image);
+			struct features *feat = compute_f(19, int_image);
 		
-			struct image pict;
-			pict.face = 0;
-			pict.feat = feat;
-		
-			tab_image[i] = pict;
+			tab_image[i].face = 0;
+			tab_image[i].feat = feat;
 		
 			nb_neg++;
 			++i;
@@ -105,7 +98,7 @@ struct image *prepare_tab_image(int size, int nb) {
 	}
 	free(int_image);
 	
-	printf("ok");
+	//printf("ok");
 	return tab_image;
 }
 
@@ -117,14 +110,14 @@ int compute_weakclass(int threshold, int polarity, int features) {
 }
 
 static int sp(struct ada_features *feat_t, int threshold) {
-	int sp;
-	for(sp = 0; sp < threshold; ) if(feat_t[sp].face) sp++;
+	int sp = 0;
+	for(int i = 0; feat_t[i].feat < threshold; i++) if(feat_t[i].face) sp++;
 	return sp;
 }
 
 static int sm(struct ada_features *feat_t, int threshold) {
-	int sm;
-	for(sm = 0; sm < threshold;) if(!feat_t[sm].face) sm++;
+	int sm = 0;
+	for(int i = 0; feat_t[i].feat < threshold; i++) if(!feat_t[sm].face) sm++;
 	return sm;
 }
 
@@ -136,7 +129,7 @@ static int compute_threshold(struct ada_features *feat_t) {
 	
 	for(int i = 0; i < nb_neg+nb_pos; ++i) {
 		
-		threshold = feat_t[i].feat->val;
+		threshold = feat_t[i].feat;
 		
 		int error1 = sp(feat_t, threshold)+(nb_neg - sm(feat_t, threshold));
 		int error2 = sm(feat_t, threshold)+(nb_pos - sp(feat_t, threshold));
@@ -153,7 +146,7 @@ static int compute_threshold(struct ada_features *feat_t) {
 		}
 	}
 	
-	return feat_t[index].feat->val;
+	return feat_t[index].feat;
 }
 
 struct strongclass *adaboost(struct image *image_tab, unsigned int iter) {
@@ -190,12 +183,10 @@ struct strongclass *adaboost(struct image *image_tab, unsigned int iter) {
 		
 			for(i = 0; i < nb_features; ++i) {
 				for(int j = 0; j < nb_pos + nb_neg; ++j) {
-					struct ada_features a_feat;
-					a_feat.face = image_tab[j].face;
-					a_feat.feat = (image_tab[j].feat)+i;
-					feat_t[j] = a_feat;
+					feat_t[j].face = image_tab[j].face;
+					feat_t[j].feat = image_tab[j].feat[i].val;
 				}
-			
+				//exit(0);
 				int threshold = compute_threshold(feat_t);
 			
 				int spl = sp(feat_t, threshold);

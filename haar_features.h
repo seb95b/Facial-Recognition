@@ -16,7 +16,7 @@ int get_int_image(int x, int y, unsigned int **int_image);
 
 int compute_features(int x, int y, int type, int scale_x, int scale_y , unsigned int **int_image);
 
-struct features *compute_f(unsigned int **int_image);
+struct features *compute_f(const int frameSize, unsigned int **int_image);
 
 int compute_size(int frameSize);
 
